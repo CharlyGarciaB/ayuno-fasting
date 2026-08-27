@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "fasting-app",
-    "slug": "fasting-app",
+    "name": "Ayuno",
+    "slug": "ayuno-fasting",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true
     },
