@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, Platform } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFasting } from '../context/FastingContext';
 import { getProtocol } from '../data/protocols';
 import { Button } from '../components/Button';
 import { colors } from '../theme/colors';
 import { RootStackParamList } from '../navigation/types';
+import { requestNotificationPermissions } from '../services/notifications';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Preparation72h'>;
 
@@ -27,7 +28,7 @@ const CONTRAINDICATIONS = [
 ];
 
 export function Preparation72hScreen({ navigation, route }: Props) {
-  const { startFast } = useFasting();
+  const { startFast, setNotificationsEnabled } = useFasting();
   const protocol = getProtocol(route.params.protocolId);
   const [checked, setChecked] = useState<boolean[]>(CHECKLIST.map(() => false));
 
@@ -39,6 +40,18 @@ export function Preparation72hScreen({ navigation, route }: Props) {
 
   const handleStart = async () => {
     if (!protocol) return;
+
+    const granted = await requestNotificationPermissions();
+    if (granted) {
+      await setNotificationsEnabled(true);
+    } else if (Platform.OS !== 'web') {
+      Alert.alert(
+        'Notificaciones desactivadas',
+        'Puedes activarlas después en Ajustes. Te avisaremos en cada fase del ayuno de 72h.',
+        [{ text: 'Entendido' }]
+      );
+    }
+
     await startFast(protocol.id, protocol.targetHours, true);
     navigation.navigate('MainTabs', { screen: 'Home' });
   };
@@ -55,6 +68,14 @@ export function Preparation72hScreen({ navigation, route }: Props) {
         {CONTRAINDICATIONS.map((item) => (
           <Text key={item} style={styles.warningItem}>• {item}</Text>
         ))}
+      </View>
+
+      <View style={styles.infoBox}>
+        <Text style={styles.infoTitle}>🔔 Notificaciones por fase</Text>
+        <Text style={styles.infoText}>
+          Al iniciar, te pediremos permiso para avisarte al entrar en cada una de las 7 fases
+          metabólicas y al completar las 72 horas.
+        </Text>
       </View>
 
       <Text style={styles.sectionTitle}>Checklist de preparación</Text>
@@ -119,6 +140,25 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     fontSize: 14,
     lineHeight: 22,
+  },
+  infoBox: {
+    backgroundColor: '#1A1F2E',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: colors.primary + '44',
+  },
+  infoTitle: {
+    color: colors.primaryLight,
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  infoText: {
+    color: colors.textMuted,
+    fontSize: 14,
+    lineHeight: 20,
   },
   sectionTitle: {
     color: colors.text,

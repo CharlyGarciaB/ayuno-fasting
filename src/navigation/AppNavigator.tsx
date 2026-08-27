@@ -7,6 +7,7 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { ProtocolsScreen } from '../screens/ProtocolsScreen';
 import { HistoryScreen } from '../screens/HistoryScreen';
 import { Preparation72hScreen } from '../screens/Preparation72hScreen';
+import { SettingsScreen } from '../screens/SettingsScreen';
 import { RefeedScreen } from '../screens/RefeedScreen';
 import { colors } from '../theme/colors';
 import { RootStackParamList, MainTabParamList } from './types';
@@ -37,6 +38,7 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
     Home: '⏱️',
     Protocols: '📋',
     History: '📊',
+    Settings: '⚙️',
   };
   return (
     <Text style={{ fontSize: focused ? 22 : 20, opacity: focused ? 1 : 0.6 }}>
@@ -63,6 +65,7 @@ function MainTabs() {
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Ayuno', headerTitle: 'Mi Ayuno' }} />
       <Tab.Screen name="Protocols" component={ProtocolsScreen} options={{ title: 'Protocolos', headerTitle: 'Protocolos' }} />
       <Tab.Screen name="History" component={HistoryScreen} options={{ title: 'Historial', headerTitle: 'Historial' }} />
+      <Tab.Screen name="Settings" component={SettingsScreen} options={{ title: 'Ajustes', headerTitle: 'Ajustes' }} />
     </Tab.Navigator>
   );
 }

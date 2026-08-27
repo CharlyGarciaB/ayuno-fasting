@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FastingSession, ProtocolId, UserSettings } from '../types';
+import { syncNotificationsForSession } from '../services/notifications';
 
 const SESSION_KEY = '@fasting/active_session';
 const HISTORY_KEY = '@fasting/history';
@@ -14,12 +15,13 @@ interface FastingContextValue {
   startFast: (protocolId: ProtocolId, targetHours: number, preparationAccepted?: boolean) => Promise<void>;
   endFast: (status: 'completed' | 'broken') => Promise<void>;
   setDefaultProtocol: (id: ProtocolId) => Promise<void>;
+  setNotificationsEnabled: (enabled: boolean) => Promise<void>;
   refresh: () => Promise<void>;
 }
 
 const defaultSettings: UserSettings = {
   defaultProtocol: '16:8',
-  notificationsEnabled: false,
+  notificationsEnabled: true,
 };
 
 const FastingContext = createContext<FastingContextValue | null>(null);
@@ -54,6 +56,11 @@ export function FastingProvider({ children }: { children: ReactNode }) {
     load();
   }, [load]);
 
+  useEffect(() => {
+    if (loading) return;
+    syncNotificationsForSession(activeSession, settings.notificationsEnabled);
+  }, [activeSession, settings.notificationsEnabled, loading]);
+
   const startFast = useCallback(
     async (protocolId: ProtocolId, targetHours: number, preparationAccepted = false) => {
       const session: FastingSession = {
@@ -66,13 +73,19 @@ export function FastingProvider({ children }: { children: ReactNode }) {
       };
       await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(session));
       setActiveSession(session);
+      const shouldNotify =
+        protocolId === '72h' && (preparationAccepted || settings.notificationsEnabled);
+      if (shouldNotify) {
+        await syncNotificationsForSession(session, true);
+      }
     },
-    []
+    [settings.notificationsEnabled]
   );
 
   const endFast = useCallback(
     async (status: 'completed' | 'broken') => {
       if (!activeSession) return;
+      await syncNotificationsForSession(null, false);
       const finished: FastingSession = {
         ...activeSession,
         endedAt: new Date().toISOString(),
@@ -95,6 +108,16 @@ export function FastingProvider({ children }: { children: ReactNode }) {
     setSettings(updated);
   }, [settings]);
 
+  const setNotificationsEnabled = useCallback(
+    async (enabled: boolean) => {
+      const updated = { ...settings, notificationsEnabled: enabled };
+      await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
+      setSettings(updated);
+      await syncNotificationsForSession(activeSession, enabled);
+    },
+    [settings, activeSession]
+  );
+
   return (
     <FastingContext.Provider
       value={{
@@ -105,6 +128,7 @@ export function FastingProvider({ children }: { children: ReactNode }) {
         startFast,
         endFast,
         setDefaultProtocol,
+        setNotificationsEnabled,
         refresh: load,
       }}
     >

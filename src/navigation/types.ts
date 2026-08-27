@@ -8,4 +8,5 @@ export type MainTabParamList = {
   Home: undefined;
   Protocols: undefined;
   History: undefined;
+  Settings: undefined;
 };

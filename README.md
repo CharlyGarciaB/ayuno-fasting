@@ -10,7 +10,8 @@ App móvil en **Expo (React Native)** para ayuno intermitente y ayuno profundo d
 - **Tarjetas educativas** por fase (qué ocurre, sensaciones, consejos)
 - **Preparación obligatoria** antes del ayuno de 72h (checklist + contraindicaciones)
 - **Guía de refeed** al completar 72h
-- **Historial** con estadísticas locales (AsyncStorage)
+- **Notificaciones por fase (72h):** avisos al entrar en cada fase y al completar 72h
+- **Ajustes:** activar/desactivar notificaciones y ver próximos avisos
 
 ## Requisitos
 
