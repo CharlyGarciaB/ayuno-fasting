@@ -1,20 +1,20 @@
 import React from 'react';
 import { View, Text, StyleSheet, Switch, Alert, Platform } from 'react-native';
 import { useFasting } from '../context/FastingContext';
+import { getProtocol } from '../data/protocols';
 import { colors } from '../theme/colors';
 import {
   requestNotificationPermissions,
-  getNotificationPermissionStatus,
-  getUpcomingPhaseNotifications,
+  getUpcomingNotifications,
 } from '../services/notifications';
 
 export function SettingsScreen() {
   const { settings, setNotificationsEnabled, activeSession } = useFasting();
-  const is72hActive = activeSession?.protocolId === '72h';
   const upcoming =
-    is72hActive && settings.notificationsEnabled && activeSession
-      ? getUpcomingPhaseNotifications(activeSession)
+    activeSession && settings.notificationsEnabled
+      ? getUpcomingNotifications(activeSession)
       : [];
+  const activeProtocol = activeSession ? getProtocol(activeSession.protocolId) : null;
 
   const handleToggle = async (value: boolean) => {
     if (value) {
@@ -24,7 +24,7 @@ export function SettingsScreen() {
           'Permisos necesarios',
           Platform.OS === 'web'
             ? 'Las notificaciones no están disponibles en web. Usa Expo Go en tu móvil.'
-            : 'Activa las notificaciones en los ajustes del sistema para recibir avisos por fase.'
+            : 'Activa las notificaciones en los ajustes del sistema para recibir avisos de ayuno.'
         );
         return;
       }
@@ -37,9 +37,10 @@ export function SettingsScreen() {
       <View style={styles.card}>
         <View style={styles.row}>
           <View style={styles.rowText}>
-            <Text style={styles.title}>Notificaciones por fase</Text>
+            <Text style={styles.title}>Notificaciones</Text>
             <Text style={styles.subtitle}>
-              Avisos al entrar en cada fase del ayuno de 72 horas y al completar la meta.
+              Aviso al completar tu meta en protocolos cortos (16:8, 18:6, OMAD…). En el ayuno
+              de 72h, también al entrar en cada fase metabólica.
             </Text>
           </View>
           <Switch
@@ -51,15 +52,17 @@ export function SettingsScreen() {
         </View>
       </View>
 
-      {is72hActive && settings.notificationsEnabled && (
+      {activeSession && settings.notificationsEnabled && (
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Próximas notificaciones</Text>
+          <Text style={styles.sectionTitle}>
+            Próximas notificaciones · {activeProtocol?.name ?? 'Ayuno activo'}
+          </Text>
           {upcoming.length === 0 ? (
-            <Text style={styles.empty}>No quedan fases pendientes.</Text>
+            <Text style={styles.empty}>No quedan avisos pendientes.</Text>
           ) : (
-            upcoming.slice(0, 5).map((item) => (
-              <View key={item.at.toISOString()} style={styles.upcomingRow}>
-                <Text style={styles.upcomingTitle}>{item.phaseTitle}</Text>
+            upcoming.slice(0, 6).map((item) => (
+              <View key={`${item.title}-${item.at.toISOString()}`} style={styles.upcomingRow}>
+                <Text style={styles.upcomingTitle}>{item.title}</Text>
                 <Text style={styles.upcomingTime}>
                   {item.at.toLocaleString('es-ES', {
                     weekday: 'short',
@@ -72,9 +75,6 @@ export function SettingsScreen() {
               </View>
             ))
           )}
-          <Text style={styles.hint}>
-            También recibirás un aviso al completar las 72 horas.
-          </Text>
         </View>
       )}
 
@@ -136,6 +136,7 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 14,
     flex: 1,
+    paddingRight: 8,
   },
   upcomingTime: {
     color: colors.primaryLight,
@@ -144,12 +145,6 @@ const styles = StyleSheet.create({
   empty: {
     color: colors.textMuted,
     fontSize: 14,
-  },
-  hint: {
-    color: colors.textMuted,
-    fontSize: 12,
-    marginTop: 12,
-    lineHeight: 18,
   },
   footer: {
     color: colors.textMuted,

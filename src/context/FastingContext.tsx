@@ -73,8 +73,7 @@ export function FastingProvider({ children }: { children: ReactNode }) {
       };
       await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(session));
       setActiveSession(session);
-      const shouldNotify =
-        protocolId === '72h' && (preparationAccepted || settings.notificationsEnabled);
+      const shouldNotify = settings.notificationsEnabled || (protocolId === '72h' && preparationAccepted);
       if (shouldNotify) {
         await syncNotificationsForSession(session, true);
       }
