@@ -1,16 +1,25 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { FastingPhase } from '../types';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { FastingPhase, ProtocolId } from '../types';
+import { getTimelineLabels } from '../data/phases';
 import { colors } from '../theme/colors';
 
 interface PhaseTimelineProps {
   phases: FastingPhase[];
   elapsedHours: number;
   targetHours: number;
+  protocolId?: ProtocolId;
+  onPhasePress?: (phase: FastingPhase) => void;
 }
 
-export function PhaseTimeline({ phases, elapsedHours, targetHours }: PhaseTimelineProps) {
+export function PhaseTimeline({
+  phases,
+  elapsedHours,
+  targetHours,
+  onPhasePress,
+}: PhaseTimelineProps) {
   const progressPercent = Math.min(100, (elapsedHours / targetHours) * 100);
+  const labels = getTimelineLabels(targetHours);
 
   return (
     <View style={styles.container}>
@@ -35,17 +44,18 @@ export function PhaseTimeline({ phases, elapsedHours, targetHours }: PhaseTimeli
         <View style={[styles.marker, { left: `${progressPercent}%` }]} />
       </View>
       <View style={styles.labels}>
-        <Text style={styles.labelText}>0h</Text>
-        <Text style={styles.labelText}>24h</Text>
-        <Text style={styles.labelText}>48h</Text>
-        <Text style={styles.labelText}>72h</Text>
+        {labels.map((label) => (
+          <Text key={label} style={styles.labelText}>
+            {label}
+          </Text>
+        ))}
       </View>
       <View style={styles.phaseDots}>
         {phases.map((phase) => {
           const isActive = elapsedHours >= phase.startHour && elapsedHours < phase.endHour;
           const isPast = elapsedHours >= phase.endHour;
-          return (
-            <View key={phase.id} style={styles.dotRow}>
+          const content = (
+            <>
               <View
                 style={[
                   styles.dot,
@@ -54,13 +64,42 @@ export function PhaseTimeline({ phases, elapsedHours, targetHours }: PhaseTimeli
                   isActive && styles.dotActive,
                 ]}
               />
-              <Text style={[styles.dotLabel, isActive && styles.dotLabelActive]} numberOfLines={1}>
-                {phase.icon} {isActive ? phase.title : `${phase.startHour}h`}
-              </Text>
+              <View style={styles.dotTextCol}>
+                <Text style={[styles.dotLabel, isActive && styles.dotLabelActive]} numberOfLines={1}>
+                  {phase.icon} {phase.title}
+                </Text>
+                <Text style={styles.dotHours}>
+                  {phase.startHour}–{phase.endHour}h
+                  {isActive ? ' · Ahora' : ''}
+                </Text>
+              </View>
+              {onPhasePress && <Text style={styles.chevron}>›</Text>}
+            </>
+          );
+
+          if (onPhasePress) {
+            return (
+              <TouchableOpacity
+                key={phase.id}
+                style={styles.dotRow}
+                onPress={() => onPhasePress(phase)}
+                activeOpacity={0.7}
+              >
+                {content}
+              </TouchableOpacity>
+            );
+          }
+
+          return (
+            <View key={phase.id} style={styles.dotRow}>
+              {content}
             </View>
           );
         })}
       </View>
+      {onPhasePress && (
+        <Text style={styles.hint}>Toca cualquier fase para ver su información completa</Text>
+      )}
     </View>
   );
 }
@@ -108,12 +147,15 @@ const styles = StyleSheet.create({
   },
   phaseDots: {
     marginTop: 16,
-    gap: 8,
+    gap: 4,
   },
   dotRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    borderRadius: 10,
   },
   dot: {
     width: 10,
@@ -131,13 +173,33 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.text,
   },
+  dotTextCol: {
+    flex: 1,
+  },
   dotLabel: {
     color: colors.textMuted,
-    fontSize: 13,
-    flex: 1,
+    fontSize: 14,
+    fontWeight: '500',
   },
   dotLabelActive: {
     color: colors.text,
-    fontWeight: '600',
+    fontWeight: '700',
+  },
+  dotHours: {
+    color: colors.textMuted,
+    fontSize: 12,
+    marginTop: 1,
+  },
+  chevron: {
+    color: colors.primaryLight,
+    fontSize: 22,
+    fontWeight: '300',
+  },
+  hint: {
+    color: colors.textMuted,
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 8,
+    fontStyle: 'italic',
   },
 });

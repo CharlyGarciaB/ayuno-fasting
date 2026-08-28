@@ -40,8 +40,8 @@ export function SettingsScreen() {
           <View style={styles.rowText}>
             <Text style={styles.title}>Notificaciones</Text>
             <Text style={styles.subtitle}>
-              Aviso al completar tu meta en protocolos cortos (16:8, 18:6, OMAD…). En el ayuno
-              de 72h, también al entrar en cada fase metabólica.
+              Aviso al completar tu meta en protocolos cortos (16:8, 18:6, OMAD…). En ayunos
+              extendidos (48h y 72h), también al entrar en cada fase metabólica.
             </Text>
           </View>
           <Switch

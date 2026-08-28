@@ -5,8 +5,10 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 import { HomeScreen } from '../screens/HomeScreen';
 import { ProtocolsScreen } from '../screens/ProtocolsScreen';
+import { LearnScreen } from '../screens/LearnScreen';
 import { HistoryScreen } from '../screens/HistoryScreen';
-import { Preparation72hScreen } from '../screens/Preparation72hScreen';
+import { PreparationExtendedScreen } from '../screens/PreparationExtendedScreen';
+import { PhaseDetailScreen } from '../screens/PhaseDetailScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { StartFastScreen } from '../screens/StartFastScreen';
 import { BodyScreen } from '../screens/BodyScreen';
@@ -41,6 +43,7 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   const icons: Record<string, string> = {
     Home: '⏱️',
     Protocols: '📋',
+    Learn: '📚',
     Body: '⚖️',
     History: '📊',
     Settings: '⚙️',
@@ -71,6 +74,7 @@ function MainTabs() {
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Ayuno', headerTitle: 'Mi Ayuno' }} />
       <Tab.Screen name="Protocols" component={ProtocolsScreen} options={{ title: 'Protocolos', headerTitle: 'Protocolos' }} />
+      <Tab.Screen name="Learn" component={LearnScreen} options={{ title: 'Aprende', headerTitle: 'Aprende' }} />
       <Tab.Screen name="Body" component={BodyScreen} options={{ title: 'Cuerpo', headerTitle: 'Mi cuerpo' }} />
       <Tab.Screen name="History" component={HistoryScreen} options={{ title: 'Historial', headerTitle: 'Historial' }} />
       <Tab.Screen name="Settings" component={SettingsScreen} options={{ title: 'Ajustes', headerTitle: 'Ajustes' }} />
@@ -90,9 +94,16 @@ export function AppNavigator() {
       >
         <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
         <Stack.Screen
-          name="Preparation72h"
-          component={Preparation72hScreen}
-          options={{ title: 'Preparación 72h' }}
+          name="PreparationExtended"
+          component={PreparationExtendedScreen}
+          options={({ route }) => ({
+            title: `Preparación ${route.params.protocolId}`,
+          })}
+        />
+        <Stack.Screen
+          name="PhaseDetail"
+          component={PhaseDetailScreen}
+          options={{ title: 'Detalle de fase' }}
         />
         <Stack.Screen
           name="StartFast"

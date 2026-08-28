@@ -1,22 +1,22 @@
 import { FastingPhase } from '../types';
 
-export const PHASES_72H: FastingPhase[] = [
+export const PHASES_48H: FastingPhase[] = [
   {
-    id: 'phase-1',
+    id: '48-phase-1',
     order: 1,
     startHour: 0,
     endHour: 12,
     title: 'Transición inicial',
     shortDescription: 'Tu cuerpo usa la glucosa de tu última comida.',
     fullContent:
-      'Después de comer, el cuerpo digiere y utiliza la glucosa como combustible principal. La insulina permanece elevada mientras procesas los nutrientes. Es el inicio natural del ayuno.',
+      'Después de comer, el cuerpo digiere y utiliza la glucosa como combustible principal. La insulina permanece elevada mientras procesas los nutrientes. Es el inicio natural del ayuno extendido.',
     commonFeelings: ['Saciedad inicial', 'Primeras señales de hambre', 'Normalidad general'],
     tips: ['Bebe agua con regularidad', 'Evita picotear', 'Mantén actividades ligeras'],
     icon: '🍽️',
     color: '#6366F1',
   },
   {
-    id: 'phase-2',
+    id: '48-phase-2',
     order: 2,
     startHour: 12,
     endHour: 18,
@@ -30,7 +30,7 @@ export const PHASES_72H: FastingPhase[] = [
     color: '#8B5CF6',
   },
   {
-    id: 'phase-3',
+    id: '48-phase-3',
     order: 3,
     startHour: 18,
     endHour: 24,
@@ -44,7 +44,7 @@ export const PHASES_72H: FastingPhase[] = [
     color: '#A855F7',
   },
   {
-    id: 'phase-4',
+    id: '48-phase-4',
     order: 4,
     startHour: 24,
     endHour: 36,
@@ -58,44 +58,16 @@ export const PHASES_72H: FastingPhase[] = [
     color: '#EC4899',
   },
   {
-    id: 'phase-5',
+    id: '48-phase-5',
     order: 5,
     startHour: 36,
     endHour: 48,
-    title: 'Cetosis estable',
-    shortDescription: 'La grasa es ahora tu combustible principal.',
+    title: 'Cetosis y cierre',
+    shortDescription: 'La grasa es tu combustible. Prepara tu ruptura del ayuno.',
     fullContent:
-      'El metabolismo se ha adaptado: la quema de grasa y las cetonas dominan. Es una fase de mayor estabilidad metabólica. Tu cuerpo opera de forma eficiente con reservas internas.',
-    commonFeelings: ['Hambre mínima', 'Calma mental', 'Posible aliento cetónico leve'],
-    tips: ['Agua y electrolitos constantes', 'Actividad ligera está bien', 'Escucha a tu cuerpo'],
-    icon: '💪',
-    color: '#F97316',
-  },
-  {
-    id: 'phase-6',
-    order: 6,
-    startHour: 48,
-    endHour: 60,
-    title: 'Autofagia profunda',
-    shortDescription: 'Procesos de limpieza y renovación celular intensificados.',
-    fullContent:
-      'A partir de las 48 horas, los procesos de autofagia — reciclaje celular — se intensifican según la literatura sobre ayuno prolongado. Es una de las fases más valoradas del ayuno extendido.',
-    commonFeelings: ['Energía variable', 'Sensación de logro', 'Posible cansancio'],
-    tips: ['No fuerces el cuerpo', 'Prioriza el descanso', 'Mantén hidratación'],
-    icon: '✨',
-    color: '#EAB308',
-  },
-  {
-    id: 'phase-7',
-    order: 7,
-    startHour: 60,
-    endHour: 72,
-    title: 'Cierre del ayuno profundo',
-    shortDescription: 'Te acercas a la meta. Prepara tu ruptura del ayuno.',
-    fullContent:
-      'Estás en la recta final. Tu cuerpo ha completado un profundo reset metabólico. Es momento de planificar cómo romper el ayuno de forma segura y gradual.',
-    commonFeelings: ['Anticipación de comida', 'Orgullo por el logro', 'Impaciencia'],
-    tips: ['Planifica tu refeed', 'No comas en exceso al terminar', 'Empieza con caldo o verduras'],
+      'El metabolismo se ha adaptado: la quema de grasa y las cetonas dominan. Los procesos de autofagia — reciclaje celular — comienzan a intensificarse. Estás en la recta final: planifica cómo romper el ayuno de forma segura y gradual.',
+    commonFeelings: ['Hambre mínima', 'Calma mental', 'Anticipación de comida'],
+    tips: ['Agua y electrolitos constantes', 'Planifica tu refeed', 'Empieza con caldo o verduras'],
     icon: '🏁',
     color: '#22C55E',
   },

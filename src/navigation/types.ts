@@ -6,13 +6,20 @@ export interface StartFastParams {
   editMode?: boolean;
 }
 
-export const APP_VERSION = '1.3.0';
+export type ExtendedProtocolId = '48h' | '72h';
+
+export const APP_VERSION = '1.4.0';
 
 export type RootStackParamList = {
   MainTabs: { screen?: keyof MainTabParamList } | undefined;
-  Preparation72h: { protocolId: '72h' };
+  PreparationExtended: { protocolId: ExtendedProtocolId };
   StartFast: StartFastParams;
-  Refeed: undefined;
+  PhaseDetail: {
+    protocolId: ExtendedProtocolId;
+    phaseId: string;
+    isCurrent?: boolean;
+  };
+  Refeed: { protocolId: ExtendedProtocolId };
   HeightForm: undefined;
   WeightForm: { entryId?: string };
 };
@@ -20,6 +27,7 @@ export type RootStackParamList = {
 export type MainTabParamList = {
   Home: undefined;
   Protocols: undefined;
+  Learn: undefined;
   Body: undefined;
   History: undefined;
   Settings: undefined;

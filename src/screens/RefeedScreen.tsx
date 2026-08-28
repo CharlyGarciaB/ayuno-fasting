@@ -25,11 +25,13 @@ const REFEED_STEPS = [
   },
 ];
 
-export function RefeedScreen({ navigation }: Props) {
+export function RefeedScreen({ navigation, route }: Props) {
+  const hours = route.params.protocolId === '48h' ? 48 : 72;
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.emoji}>🎉</Text>
-      <Text style={styles.title}>¡72 horas completadas!</Text>
+      <Text style={styles.title}>¡{hours} horas completadas!</Text>
       <Text style={styles.subtitle}>
         Rompe el ayuno de forma gradual. Tu sistema digestivo necesita tiempo para readaptarse.
       </Text>

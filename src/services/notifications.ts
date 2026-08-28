@@ -1,6 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
-import { PHASES_72H } from '../data/phases72h';
+import { getPhasesForProtocol, isExtendedProtocol } from '../data/phases';
 import { getProtocol } from '../data/protocols';
 import { FastingSession } from '../types';
 
@@ -46,9 +46,9 @@ async function prepareNotifications(): Promise<boolean> {
 
 function completionContent(session: FastingSession): { title: string; body: string } {
   const protocol = getProtocol(session.protocolId);
-  if (session.protocolId === '72h') {
+  if (isExtendedProtocol(session.protocolId)) {
     return {
-      title: '🏁 ¡72 horas completadas!',
+      title: `🏁 ¡${session.targetHours} horas completadas!`,
       body: 'Has alcanzado tu meta. Abre la app para ver la guía de refeed.',
     };
   }
@@ -120,13 +120,16 @@ export async function scheduleCompletionNotification(session: FastingSession): P
   });
 }
 
-export async function schedule72hPhaseNotifications(session: FastingSession): Promise<number> {
+export async function scheduleExtendedPhaseNotifications(session: FastingSession): Promise<number> {
   if (!(await prepareNotifications())) return 0;
+
+  const phases = getPhasesForProtocol(session.protocolId);
+  if (!phases) return 0;
 
   const startedAt = new Date(session.startedAt).getTime();
   let scheduled = 0;
 
-  for (const phase of PHASES_72H) {
+  for (const phase of phases) {
     const triggerMs = startedAt + phase.startHour * 60 * 60 * 1000;
     const didSchedule = await scheduleAt(session, phase.id, triggerMs, {
       title: `${phase.icon} Fase ${phase.order}: ${phase.title}`,
@@ -148,6 +151,11 @@ export async function schedule72hPhaseNotifications(session: FastingSession): Pr
   return scheduled;
 }
 
+/** @deprecated Use scheduleExtendedPhaseNotifications */
+export async function schedule72hPhaseNotifications(session: FastingSession): Promise<number> {
+  return scheduleExtendedPhaseNotifications(session);
+}
+
 export async function syncNotificationsForSession(
   session: FastingSession | null,
   enabled: boolean
@@ -157,8 +165,8 @@ export async function syncNotificationsForSession(
     return;
   }
 
-  if (session.protocolId === '72h') {
-    await schedule72hPhaseNotifications(session);
+  if (isExtendedProtocol(session.protocolId)) {
+    await scheduleExtendedPhaseNotifications(session);
   } else {
     await scheduleCompletionNotification(session);
   }
@@ -170,8 +178,9 @@ export function getUpcomingNotifications(session: FastingSession): UpcomingNotif
   const elapsedHours = (now - startedAt) / (60 * 60 * 1000);
   const upcoming: UpcomingNotification[] = [];
 
-  if (session.protocolId === '72h') {
-    for (const phase of PHASES_72H) {
+  const phases = getPhasesForProtocol(session.protocolId);
+  if (phases) {
+    for (const phase of phases) {
       if (phase.startHour <= elapsedHours) continue;
       upcoming.push({
         title: `Fase ${phase.order}: ${phase.title}`,
@@ -184,10 +193,9 @@ export function getUpcomingNotifications(session: FastingSession): UpcomingNotif
   if (completeMs > now) {
     const protocol = getProtocol(session.protocolId);
     upcoming.push({
-      title:
-        session.protocolId === '72h'
-          ? '72 horas completadas'
-          : `Meta ${protocol?.name ?? session.targetHours + 'h'} alcanzada`,
+      title: isExtendedProtocol(session.protocolId)
+        ? `${session.targetHours} horas completadas`
+        : `Meta ${protocol?.name ?? session.targetHours + 'h'} alcanzada`,
       at: new Date(completeMs),
     });
   }

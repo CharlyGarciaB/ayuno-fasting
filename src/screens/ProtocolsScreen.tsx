@@ -13,7 +13,7 @@ import { PROTOCOLS } from '../data/protocols';
 import { useFasting } from '../context/FastingContext';
 import { colors } from '../theme/colors';
 import { Protocol } from '../types';
-import { RootStackParamList } from '../navigation/types';
+import { ExtendedProtocolId, RootStackParamList } from '../navigation/types';
 import { navigateToStartFast } from '../navigation/navigate';
 
 export function ProtocolsScreen() {
@@ -27,7 +27,9 @@ export function ProtocolsScreen() {
     }
 
     if (protocol.isExtended) {
-      navigation.navigate('Preparation72h', { protocolId: '72h' });
+      navigation.navigate('PreparationExtended', {
+        protocolId: protocol.id as ExtendedProtocolId,
+      });
       return;
     }
 
@@ -78,7 +80,9 @@ function ProtocolCard({
       <Text style={styles.cardHours}>{protocol.targetHours} horas</Text>
       <Text style={styles.cardDesc}>{protocol.description}</Text>
       {featured && (
-        <Text style={styles.featuredHint}>Incluye guía didáctica por 7 fases metabólicas →</Text>
+        <Text style={styles.featuredHint}>
+          Incluye guía didáctica por fases metabólicas y advertencias de seguridad →
+        </Text>
       )}
     </TouchableOpacity>
   );

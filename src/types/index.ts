@@ -1,4 +1,4 @@
-export type ProtocolId = '16:8' | '18:6' | '20:4' | 'omad' | '72h' | 'custom';
+export type ProtocolId = '16:8' | '18:6' | '20:4' | 'omad' | '48h' | '72h' | 'custom';
 
 export type SessionStatus = 'active' | 'completed' | 'broken';
 

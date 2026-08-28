@@ -13,12 +13,18 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFasting } from '../context/FastingContext';
 import { useFastingTimer } from '../hooks/useFastingTimer';
 import { getProtocol } from '../data/protocols';
-import { getCurrentPhase, getNextPhase, PHASES_72H } from '../data/phases72h';
+import {
+  getPhasesForProtocol,
+  getCurrentPhase,
+  getNextPhase,
+  isExtendedProtocol,
+} from '../data/phases';
 import { getTipForPhase } from '../data/tips';
 import { CircularFastingRing, buildPhaseMarkers } from '../components/CircularFastingRing';
 import { ScheduleRow } from '../components/ScheduleRow';
 import { TipCard } from '../components/TipCard';
 import { PhaseCard } from '../components/PhaseCard';
+import { PhaseTimeline } from '../components/PhaseTimeline';
 import { Button } from '../components/Button';
 import { colors } from '../theme/colors';
 import {
@@ -27,8 +33,9 @@ import {
   formatScheduleDate,
   getEndDateIso,
 } from '../utils/time';
-import { RootStackParamList } from '../navigation/types';
+import { ExtendedProtocolId, RootStackParamList } from '../navigation/types';
 import { navigateToStartFast } from '../navigation/navigate';
+import { FastingPhase } from '../types';
 
 export function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -38,10 +45,23 @@ export function HomeScreen() {
   const protocol = activeSession ? getProtocol(activeSession.protocolId) : null;
   const targetHours = activeSession?.targetHours ?? 16;
   const timer = useFastingTimer(activeSession?.startedAt, targetHours);
-  const is72h = activeSession?.protocolId === '72h';
-  const currentPhase = is72h ? getCurrentPhase(timer.elapsedHours) : null;
-  const nextPhase = currentPhase ? getNextPhase(currentPhase) : null;
+  const isExtended = activeSession ? isExtendedProtocol(activeSession.protocolId) : false;
+  const phases = activeSession ? getPhasesForProtocol(activeSession.protocolId) : null;
+  const currentPhase =
+    phases && isExtended ? getCurrentPhase(phases, timer.elapsedHours) : null;
+  const nextPhase = phases && currentPhase ? getNextPhase(phases, currentPhase) : null;
   const tip = getTipForPhase(currentPhase?.icon);
+
+  const openPhaseDetail = (phase: FastingPhase) => {
+    if (!activeSession || !isExtendedProtocol(activeSession.protocolId)) return;
+    const isCurrent =
+      timer.elapsedHours >= phase.startHour && timer.elapsedHours < phase.endHour;
+    navigation.navigate('PhaseDetail', {
+      protocolId: activeSession.protocolId as ExtendedProtocolId,
+      phaseId: phase.id,
+      isCurrent,
+    });
+  };
 
   const handleEnd = (status: 'completed' | 'broken') => {
     const title = status === 'completed' ? '¿Completar ayuno?' : '¿Terminar ayuno?';
@@ -56,9 +76,10 @@ export function HomeScreen() {
         text: 'Confirmar',
         style: status === 'broken' ? 'destructive' : 'default',
         onPress: async () => {
+          const protocolId = activeSession?.protocolId;
           await endFast(status);
-          if (status === 'completed' && is72h) {
-            navigation.navigate('Refeed');
+          if (status === 'completed' && protocolId && isExtendedProtocol(protocolId)) {
+            navigation.navigate('Refeed', { protocolId });
           }
         },
       },
@@ -98,9 +119,10 @@ export function HomeScreen() {
 
   const elapsed = formatFastingElapsed(timer.elapsedSeconds);
   const endIso = getEndDateIso(activeSession.startedAt, targetHours);
-  const markers = is72h
-    ? buildPhaseMarkers(PHASES_72H, timer.elapsedHours, targetHours)
-    : [];
+  const markers =
+    phases && isExtended
+      ? buildPhaseMarkers(phases, timer.elapsedHours, targetHours)
+      : [];
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -155,19 +177,33 @@ export function HomeScreen() {
         onEditProtocol={() => navigation.navigate('MainTabs', { screen: 'Protocols' } as never)}
       />
 
-      {is72h && currentPhase && (
+      {isExtended && phases && currentPhase && (
         <View style={styles.phaseSection}>
+          <Text style={styles.sectionTitle}>Fases del ayuno</Text>
+          <PhaseTimeline
+            phases={phases}
+            elapsedHours={timer.elapsedHours}
+            targetHours={targetHours}
+            protocolId={activeSession.protocolId}
+            onPhasePress={openPhaseDetail}
+          />
+
           <Text style={styles.sectionTitle}>Fase actual · {currentPhase.title}</Text>
-          <PhaseCard phase={currentPhase} expanded={expanded} />
+          <TouchableOpacity onPress={() => openPhaseDetail(currentPhase)} activeOpacity={0.85}>
+            <PhaseCard phase={currentPhase} expanded={expanded} />
+          </TouchableOpacity>
           {nextPhase && (
-            <Text style={styles.nextMilestone}>
-              Próximo hito: {nextPhase.title}
-            </Text>
+            <Text style={styles.nextMilestone}>Próximo hito: {nextPhase.title}</Text>
           )}
           <Button
             title={expanded ? 'Ver menos' : 'Saber más sobre esta fase'}
             onPress={() => setExpanded(!expanded)}
             variant="ghost"
+          />
+          <Button
+            title="Ver detalle completo de la fase"
+            onPress={() => openPhaseDetail(currentPhase)}
+            variant="secondary"
           />
         </View>
       )}
@@ -177,10 +213,10 @@ export function HomeScreen() {
         <TipCard icon={tip.icon} title={tip.title} text={tip.text} />
       </View>
 
-      {is72h && (
+      {isExtended && (
         <Text style={styles.disclaimer}>
-          El ayuno prolongado no sustituye consejo médico. Consulta a un profesional si tienes
-          condiciones de salud.
+          El ayuno prolongado sin guía profesional conlleva riesgos. Este contenido es educativo y
+          no sustituye consejo médico.
         </Text>
       )}
     </ScrollView>

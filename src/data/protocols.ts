@@ -26,6 +26,14 @@ export const PROTOCOLS: Protocol[] = [
     description: 'Una comida al día. Ayuno de ~23 horas.',
   },
   {
+    id: '48h',
+    name: 'Ayuno extendido 48h',
+    targetHours: 48,
+    description: 'Reset metabólico con guía por fases. Requiere preparación y precaución.',
+    badge: 'Extendido',
+    isExtended: true,
+  },
+  {
     id: '72h',
     name: 'Ayuno profundo 72h',
     targetHours: 72,

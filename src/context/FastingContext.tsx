@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FastingSession, ProtocolId, UserSettings } from '../types';
+import { isExtendedProtocol } from '../data/phases';
 import { syncNotificationsForSession } from '../services/notifications';
 
 const SESSION_KEY = '@fasting/active_session';
@@ -89,7 +90,8 @@ export function FastingProvider({ children }: { children: ReactNode }) {
       };
       await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(session));
       setActiveSession(session);
-      const shouldNotify = settings.notificationsEnabled || (protocolId === '72h' && preparationAccepted);
+      const shouldNotify =
+        settings.notificationsEnabled || (isExtendedProtocol(protocolId) && preparationAccepted);
       if (shouldNotify) {
         await syncNotificationsForSession(session, true);
       }
