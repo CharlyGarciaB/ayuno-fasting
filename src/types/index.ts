@@ -40,6 +40,17 @@ export interface UserSettings {
   notificationsEnabled: boolean;
 }
 
+export interface UserProfile {
+  heightCm: number | null;
+}
+
+export interface WeightEntry {
+  id: string;
+  weightKg: number;
+  recordedAt: string;
+  note?: string;
+}
+
 export interface SymptomLog {
   hour: number;
   note: string;

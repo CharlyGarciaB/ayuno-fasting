@@ -9,6 +9,9 @@ import { HistoryScreen } from '../screens/HistoryScreen';
 import { Preparation72hScreen } from '../screens/Preparation72hScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { StartFastScreen } from '../screens/StartFastScreen';
+import { BodyScreen } from '../screens/BodyScreen';
+import { HeightFormScreen } from '../screens/HeightFormScreen';
+import { WeightFormScreen } from '../screens/WeightFormScreen';
 import { RefeedScreen } from '../screens/RefeedScreen';
 import { colors } from '../theme/colors';
 import { RootStackParamList, MainTabParamList } from './types';
@@ -38,6 +41,7 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   const icons: Record<string, string> = {
     Home: '⏱️',
     Protocols: '📋',
+    Body: '⚖️',
     History: '📊',
     Settings: '⚙️',
   };
@@ -67,6 +71,7 @@ function MainTabs() {
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Ayuno', headerTitle: 'Mi Ayuno' }} />
       <Tab.Screen name="Protocols" component={ProtocolsScreen} options={{ title: 'Protocolos', headerTitle: 'Protocolos' }} />
+      <Tab.Screen name="Body" component={BodyScreen} options={{ title: 'Cuerpo', headerTitle: 'Mi cuerpo' }} />
       <Tab.Screen name="History" component={HistoryScreen} options={{ title: 'Historial', headerTitle: 'Historial' }} />
       <Tab.Screen name="Settings" component={SettingsScreen} options={{ title: 'Ajustes', headerTitle: 'Ajustes' }} />
     </Tab.Navigator>
@@ -93,6 +98,16 @@ export function AppNavigator() {
           name="StartFast"
           component={StartFastScreen}
           options={{ title: 'Inicio del ayuno' }}
+        />
+        <Stack.Screen
+          name="HeightForm"
+          component={HeightFormScreen}
+          options={{ title: 'Altura' }}
+        />
+        <Stack.Screen
+          name="WeightForm"
+          component={WeightFormScreen}
+          options={{ title: 'Peso' }}
         />
         <Stack.Screen
           name="Refeed"
