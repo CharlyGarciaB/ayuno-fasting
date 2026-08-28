@@ -1,4 +1,4 @@
-# Ayuno — App de Fasting
+# Mi Ayuno — App de Fasting
 
 App móvil en **Expo (React Native)** para ayuno intermitente y ayuno profundo de **72 horas**, con guía didáctica por fases metabólicas.
 
