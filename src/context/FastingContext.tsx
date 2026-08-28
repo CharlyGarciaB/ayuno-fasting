@@ -12,7 +12,11 @@ interface FastingContextValue {
   history: FastingSession[];
   settings: UserSettings;
   loading: boolean;
-  startFast: (protocolId: ProtocolId, targetHours: number, preparationAccepted?: boolean) => Promise<void>;
+  startFast: (
+    protocolId: ProtocolId,
+    targetHours: number,
+    options?: { preparationAccepted?: boolean; startedAt?: Date | string }
+  ) => Promise<void>;
   endFast: (status: 'completed' | 'broken') => Promise<void>;
   setDefaultProtocol: (id: ProtocolId) => Promise<void>;
   setNotificationsEnabled: (enabled: boolean) => Promise<void>;
@@ -62,12 +66,23 @@ export function FastingProvider({ children }: { children: ReactNode }) {
   }, [activeSession, settings.notificationsEnabled, loading]);
 
   const startFast = useCallback(
-    async (protocolId: ProtocolId, targetHours: number, preparationAccepted = false) => {
+    async (
+      protocolId: ProtocolId,
+      targetHours: number,
+      options?: { preparationAccepted?: boolean; startedAt?: Date | string }
+    ) => {
+      const preparationAccepted = options?.preparationAccepted ?? false;
+      const startedAtDate = options?.startedAt ? new Date(options.startedAt) : new Date();
+
+      if (startedAtDate.getTime() > Date.now()) {
+        throw new Error('La fecha de inicio no puede ser en el futuro.');
+      }
+
       const session: FastingSession = {
         id: generateId(),
         protocolId,
         targetHours,
-        startedAt: new Date().toISOString(),
+        startedAt: startedAtDate.toISOString(),
         status: 'active',
         ...(preparationAccepted ? { preparationAcceptedAt: new Date().toISOString() } : {}),
       };

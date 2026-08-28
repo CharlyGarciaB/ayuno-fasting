@@ -13,7 +13,8 @@
           "icon": "./assets/icon.png",
           "color": "#6366F1"
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "ios": {
       "supportsTablet": true

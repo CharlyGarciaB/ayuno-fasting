@@ -19,7 +19,7 @@ import { PhaseTimeline } from '../components/PhaseTimeline';
 import { PhaseCard } from '../components/PhaseCard';
 import { Button } from '../components/Button';
 import { colors } from '../theme/colors';
-import { formatHoursMinutes } from '../utils/time';
+import { formatHoursMinutes, formatRelativeStart } from '../utils/time';
 import { RootStackParamList } from '../navigation/types';
 
 export function HomeScreen() {
@@ -92,6 +92,11 @@ export function HomeScreen() {
           </View>
         )}
         <Text style={styles.protocolName}>{protocol?.name ?? 'Ayuno'}</Text>
+        {activeSession && (
+          <Text style={styles.startedAt}>
+            Inicio: {formatRelativeStart(activeSession.startedAt)}
+          </Text>
+        )}
       </View>
 
       <ProgressBar
@@ -190,6 +195,11 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 24,
     fontWeight: '700',
+  },
+  startedAt: {
+    color: colors.textMuted,
+    fontSize: 14,
+    marginTop: 6,
   },
   progressLabel: {
     color: colors.textMuted,

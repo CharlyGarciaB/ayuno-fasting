@@ -1,6 +1,14 @@
+import { ProtocolId } from '../types';
+
+export interface StartFastParams {
+  protocolId: ProtocolId;
+  preparationAccepted?: boolean;
+}
+
 export type RootStackParamList = {
   MainTabs: { screen?: 'Home' | 'Protocols' | 'History' } | undefined;
   Preparation72h: { protocolId: '72h' };
+  StartFast: StartFastParams;
   Refeed: undefined;
 };
 

@@ -8,6 +8,7 @@ import { ProtocolsScreen } from '../screens/ProtocolsScreen';
 import { HistoryScreen } from '../screens/HistoryScreen';
 import { Preparation72hScreen } from '../screens/Preparation72hScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
+import { StartFastScreen } from '../screens/StartFastScreen';
 import { RefeedScreen } from '../screens/RefeedScreen';
 import { colors } from '../theme/colors';
 import { RootStackParamList, MainTabParamList } from './types';
@@ -85,6 +86,11 @@ export function AppNavigator() {
           name="Preparation72h"
           component={Preparation72hScreen}
           options={{ title: 'Preparación 72h' }}
+        />
+        <Stack.Screen
+          name="StartFast"
+          component={StartFastScreen}
+          options={{ title: 'Inicio del ayuno' }}
         />
         <Stack.Screen
           name="Refeed"

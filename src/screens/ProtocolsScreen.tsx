@@ -11,14 +11,13 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { PROTOCOLS } from '../data/protocols';
 import { useFasting } from '../context/FastingContext';
-import { requestNotificationPermissions } from '../services/notifications';
 import { colors } from '../theme/colors';
 import { Protocol } from '../types';
 import { RootStackParamList } from '../navigation/types';
 
 export function ProtocolsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { activeSession, startFast, settings } = useFasting();
+  const { activeSession } = useFasting();
 
   const handleSelect = (protocol: Protocol) => {
     if (activeSession) {
@@ -31,22 +30,7 @@ export function ProtocolsScreen() {
       return;
     }
 
-    Alert.alert(
-      `Iniciar ${protocol.name}`,
-      `${protocol.description}${settings.notificationsEnabled ? '\n\nTe avisaremos al completar las ' + protocol.targetHours + ' horas.' : ''}`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Comenzar',
-          onPress: async () => {
-            if (settings.notificationsEnabled) {
-              await requestNotificationPermissions();
-            }
-            await startFast(protocol.id, protocol.targetHours);
-          },
-        },
-      ]
-    );
+    navigation.navigate('StartFast', { protocolId: protocol.id });
   };
 
   const intermittent = PROTOCOLS.filter((p) => !p.isExtended);

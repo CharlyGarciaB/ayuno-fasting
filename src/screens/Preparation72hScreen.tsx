@@ -28,7 +28,7 @@ const CONTRAINDICATIONS = [
 ];
 
 export function Preparation72hScreen({ navigation, route }: Props) {
-  const { startFast, setNotificationsEnabled } = useFasting();
+  const { setNotificationsEnabled } = useFasting();
   const protocol = getProtocol(route.params.protocolId);
   const [checked, setChecked] = useState<boolean[]>(CHECKLIST.map(() => false));
 
@@ -52,8 +52,7 @@ export function Preparation72hScreen({ navigation, route }: Props) {
       );
     }
 
-    await startFast(protocol.id, protocol.targetHours, true);
-    navigation.navigate('MainTabs', { screen: 'Home' });
+    navigation.navigate('StartFast', { protocolId: '72h', preparationAccepted: true });
   };
 
   return (

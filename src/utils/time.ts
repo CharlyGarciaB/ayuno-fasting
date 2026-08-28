@@ -36,3 +36,28 @@ export function getProgress(startedAt: string, targetHours: number): number {
   const target = targetHours * 3600;
   return Math.min(1, elapsed / target);
 }
+
+export function formatDateTimeSpanish(iso: string): string {
+  return new Date(iso).toLocaleString('es-ES', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+export function formatRelativeStart(iso: string): string {
+  const started = new Date(iso);
+  const now = new Date();
+  const startDay = new Date(started.getFullYear(), started.getMonth(), started.getDate());
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diffDays = Math.round((today.getTime() - startDay.getTime()) / (24 * 60 * 60 * 1000));
+
+  const time = started.toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+  if (diffDays === 0) return `hoy a las ${time}`;
+  if (diffDays === 1) return `ayer a las ${time}`;
+  if (diffDays > 1) return `hace ${diffDays} días (${formatDateTimeSpanish(iso)})`;
+  return formatDateTimeSpanish(iso);
+}
