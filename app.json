@@ -2,10 +2,11 @@
   "expo": {
     "name": "Ayuno",
     "slug": "ayuno-fasting",
-    "version": "1.0.0",
+    "version": "1.3.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
+    "scheme": "ayuno",
     "plugins": [
       [
         "expo-notifications",
@@ -17,11 +18,19 @@
       "@react-native-community/datetimepicker"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.charlygarciab.ayuno",
+      "buildNumber": "1",
+      "infoPlist": {
+        "UIBackgroundModes": ["remote-notification"],
+        "NSUserNotificationsUsageDescription": "Te avisamos al completar tu ayuno y al cambiar de fase en el ayuno de 72 horas."
+      }
     },
     "android": {
+      "package": "com.charlygarciab.ayuno",
+      "versionCode": 1,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0B0F17",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
