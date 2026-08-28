@@ -6,7 +6,7 @@ export interface StartFastParams {
   editMode?: boolean;
 }
 
-export const APP_VERSION = '1.1.0';
+export const APP_VERSION = '1.2.0';
 
 export type RootStackParamList = {
   MainTabs: { screen?: 'Home' | 'Protocols' | 'History' } | undefined;

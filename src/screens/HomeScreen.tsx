@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  TouchableOpacity,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
@@ -13,13 +14,19 @@ import { useFasting } from '../context/FastingContext';
 import { useFastingTimer } from '../hooks/useFastingTimer';
 import { getProtocol } from '../data/protocols';
 import { getCurrentPhase, getNextPhase, PHASES_72H } from '../data/phases72h';
-import { TimerDisplay } from '../components/TimerDisplay';
-import { ProgressBar } from '../components/ProgressBar';
-import { PhaseTimeline } from '../components/PhaseTimeline';
+import { getTipForPhase } from '../data/tips';
+import { CircularFastingRing, buildPhaseMarkers } from '../components/CircularFastingRing';
+import { ScheduleRow } from '../components/ScheduleRow';
+import { TipCard } from '../components/TipCard';
 import { PhaseCard } from '../components/PhaseCard';
 import { Button } from '../components/Button';
 import { colors } from '../theme/colors';
-import { formatHoursMinutes, formatRelativeStart } from '../utils/time';
+import {
+  formatFastingElapsed,
+  formatLongDuration,
+  formatScheduleDate,
+  getEndDateIso,
+} from '../utils/time';
 import { RootStackParamList } from '../navigation/types';
 import { navigateToStartFast } from '../navigation/navigate';
 
@@ -34,13 +41,14 @@ export function HomeScreen() {
   const is72h = activeSession?.protocolId === '72h';
   const currentPhase = is72h ? getCurrentPhase(timer.elapsedHours) : null;
   const nextPhase = currentPhase ? getNextPhase(currentPhase) : null;
+  const tip = getTipForPhase(currentPhase?.icon);
 
   const handleEnd = (status: 'completed' | 'broken') => {
-    const title = status === 'completed' ? '¿Completar ayuno?' : '¿Interrumpir ayuno?';
+    const title = status === 'completed' ? '¿Completar ayuno?' : '¿Terminar ayuno?';
     const message =
       status === 'completed'
         ? 'Has alcanzado tu meta. ¡Felicidades!'
-        : '¿Seguro que quieres interrumpir el ayuno?';
+        : '¿Seguro que quieres terminar el ayuno?';
 
     Alert.alert(title, message, [
       { text: 'Cancelar', style: 'cancel' },
@@ -68,102 +76,111 @@ export function HomeScreen() {
   if (!activeSession) {
     return (
       <View style={styles.center}>
-        <LinearGradient colors={['#6366F1', '#EC4899']} style={styles.heroIcon}>
+        <LinearGradient colors={['#2563EB', '#6366F1']} style={styles.heroRing}>
           <Text style={styles.heroEmoji}>⏳</Text>
         </LinearGradient>
         <Text style={styles.emptyTitle}>Sin ayuno activo</Text>
         <Text style={styles.emptySubtitle}>
-          Elige un protocolo para comenzar tu ayuno intermitente o el ayuno profundo de 72 horas.
+          Elige un protocolo y registra cuándo empezaste, incluso si fue ayer.
         </Text>
-        <Button
-          title="Elegir protocolo"
+        <TouchableOpacity
+          style={styles.primaryCta}
           onPress={() => navigation.navigate('MainTabs', { screen: 'Protocols' } as never)}
-          style={styles.emptyButton}
-        />
+          activeOpacity={0.85}
+        >
+          <LinearGradient colors={['#2563EB', '#4F46E5']} style={styles.primaryCtaGradient}>
+            <Text style={styles.primaryCtaText}>Comenzar ayuno</Text>
+          </LinearGradient>
+        </TouchableOpacity>
       </View>
     );
   }
 
+  const elapsed = formatFastingElapsed(timer.elapsedSeconds);
+  const endIso = getEndDateIso(activeSession.startedAt, targetHours);
+  const markers = is72h
+    ? buildPhaseMarkers(PHASES_72H, timer.elapsedHours, targetHours)
+    : [];
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        {protocol?.badge && (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{protocol.badge}</Text>
-          </View>
-        )}
-        <Text style={styles.protocolName}>{protocol?.name ?? 'Ayuno'}</Text>
-        {activeSession && (
-          <Text style={styles.startedAt}>
-            Inicio: {formatRelativeStart(activeSession.startedAt)}
-          </Text>
-        )}
+      <View style={styles.topBar}>
+        <View>
+          <Text style={styles.brand}>AYUNO</Text>
+          {protocol?.badge && <Text style={styles.brandSub}>{protocol.badge}</Text>}
+        </View>
+        <TouchableOpacity
+          style={styles.protocolPill}
+          onPress={() => navigation.navigate('MainTabs', { screen: 'Protocols' } as never)}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.protocolPillText}>{protocol?.name ?? 'Ayuno'}</Text>
+          <Text style={styles.protocolPillEdit}>✎</Text>
+        </TouchableOpacity>
       </View>
 
-      <ProgressBar
+      <CircularFastingRing
         progress={timer.progress}
-        color={is72h && currentPhase ? currentPhase.color : colors.primary}
-        height={10}
+        elapsedMain={elapsed.main}
+        elapsedSeconds={elapsed.seconds}
+        remainingLabel={formatLongDuration(timer.remainingSeconds)}
+        phaseIcon={currentPhase?.icon ?? '🔥'}
+        markers={markers}
       />
-      <Text style={styles.progressLabel}>
-        {Math.round(timer.progress * 100)}% · {Math.floor(timer.elapsedHours)}h / {targetHours}h
-      </Text>
 
-      <TimerDisplay
-        elapsedSeconds={timer.elapsedSeconds}
-        remainingSeconds={timer.remainingSeconds}
-        targetHours={targetHours}
+      <TouchableOpacity
+        style={styles.primaryCta}
+        onPress={() => handleEnd(timer.isComplete ? 'completed' : 'broken')}
+        activeOpacity={0.85}
+      >
+        <LinearGradient
+          colors={timer.isComplete ? ['#22C55E', '#16A34A'] : ['#2563EB', '#4F46E5']}
+          style={styles.primaryCtaGradient}
+        >
+          <Text style={styles.primaryCtaText}>
+            {timer.isComplete ? 'Completar ayuno' : 'Terminar ayuno'}
+          </Text>
+        </LinearGradient>
+      </TouchableOpacity>
+
+      <ScheduleRow
+        startLabel={formatScheduleDate(activeSession.startedAt)}
+        endLabel={formatScheduleDate(endIso)}
+        onEditStart={() =>
+          navigateToStartFast(navigation, {
+            protocolId: activeSession.protocolId,
+            editMode: true,
+          })
+        }
+        onEditProtocol={() => navigation.navigate('MainTabs', { screen: 'Protocols' } as never)}
       />
 
       {is72h && currentPhase && (
-        <>
-          <PhaseTimeline
-            phases={PHASES_72H}
-            elapsedHours={timer.elapsedHours}
-            targetHours={targetHours}
-          />
-
+        <View style={styles.phaseSection}>
+          <Text style={styles.sectionTitle}>Fase actual · {currentPhase.title}</Text>
           <PhaseCard phase={currentPhase} expanded={expanded} />
-
           {nextPhase && (
             <Text style={styles.nextMilestone}>
-              Próximo hito: {nextPhase.title} en{' '}
-              {formatHoursMinutes((nextPhase.startHour - timer.elapsedHours) * 3600)}
+              Próximo hito: {nextPhase.title}
             </Text>
           )}
-
           <Button
             title={expanded ? 'Ver menos' : 'Saber más sobre esta fase'}
             onPress={() => setExpanded(!expanded)}
             variant="ghost"
           />
-        </>
+        </View>
       )}
 
-      <View style={styles.actions}>
-        <Button
-          title="Corregir fecha de inicio"
-          onPress={() => {
-            if (!activeSession) return;
-            navigateToStartFast(navigation, {
-              protocolId: activeSession.protocolId,
-              editMode: true,
-            });
-          }}
-          variant="secondary"
-        />
-        {timer.isComplete ? (
-          <Button title="Completar ayuno" onPress={() => handleEnd('completed')} />
-        ) : (
-          <>
-            <Button title="Terminar ayuno" onPress={() => handleEnd('broken')} variant="danger" />
-          </>
-        )}
+      <View style={styles.tipsSection}>
+        <Text style={styles.sectionTitle}>💡 Consejo</Text>
+        <TipCard icon={tip.icon} title={tip.title} text={tip.text} />
       </View>
 
       {is72h && (
         <Text style={styles.disclaimer}>
-          El ayuno prolongado no sustituye consejo médico. Consulta a un profesional si tienes condiciones de salud.
+          El ayuno prolongado no sustituye consejo médico. Consulta a un profesional si tienes
+          condiciones de salud.
         </Text>
       )}
     </ScrollView>
@@ -186,50 +203,80 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 32,
   },
-  header: {
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 4,
   },
-  badge: {
-    backgroundColor: colors.accent,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 999,
-    marginBottom: 8,
-  },
-  badgeText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  protocolName: {
+  brand: {
     color: colors.text,
-    fontSize: 24,
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: 2,
+  },
+  brandSub: {
+    color: colors.accent,
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  protocolPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: colors.surface,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.primary + '66',
+  },
+  protocolPillText: {
+    color: colors.primaryLight,
+    fontSize: 14,
     fontWeight: '700',
   },
-  startedAt: {
-    color: colors.textMuted,
-    fontSize: 14,
-    marginTop: 6,
+  protocolPillEdit: {
+    color: colors.primaryLight,
+    fontSize: 12,
   },
-  progressLabel: {
+  primaryCta: {
+    marginTop: 8,
+    marginBottom: 16,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  primaryCtaGradient: {
+    paddingVertical: 18,
+    alignItems: 'center',
+    borderRadius: 16,
+  },
+  primaryCtaText: {
+    color: '#fff',
+    fontSize: 17,
+    fontWeight: '700',
+  },
+  phaseSection: {
+    marginTop: 20,
+  },
+  tipsSection: {
+    marginTop: 20,
+  },
+  sectionTitle: {
     color: colors.textMuted,
     fontSize: 13,
-    textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 8,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 10,
   },
   nextMilestone: {
     color: colors.primaryLight,
     fontSize: 14,
     textAlign: 'center',
-    marginTop: 12,
-    marginBottom: 8,
-  },
-  actions: {
-    marginTop: 24,
-    gap: 12,
+    marginTop: 8,
+    marginBottom: 4,
   },
   disclaimer: {
     color: colors.textMuted,
@@ -241,20 +288,20 @@ const styles = StyleSheet.create({
   muted: {
     color: colors.textMuted,
   },
-  heroIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  heroRing: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
   },
   heroEmoji: {
-    fontSize: 36,
+    fontSize: 40,
   },
   emptyTitle: {
     color: colors.text,
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '700',
     marginBottom: 8,
   },
@@ -263,9 +310,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: 'center',
     lineHeight: 22,
-    marginBottom: 24,
-  },
-  emptyButton: {
-    minWidth: 200,
+    marginBottom: 28,
   },
 });
