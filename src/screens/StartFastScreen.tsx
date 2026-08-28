@@ -31,10 +31,14 @@ function subtractDays(date: Date, days: number): Date {
 }
 
 export function StartFastScreen({ navigation, route }: Props) {
-  const { startFast, settings } = useFasting();
-  const { protocolId, preparationAccepted } = route.params;
+  const { startFast, updateSessionStart, settings, activeSession } = useFasting();
+  const { protocolId, preparationAccepted, editMode } = route.params;
   const protocol = getProtocol(protocolId);
-  const [startDate, setStartDate] = useState(new Date());
+
+  const initialDate =
+    editMode && activeSession ? new Date(activeSession.startedAt) : new Date();
+
+  const [startDate, setStartDate] = useState(initialDate);
   const [showPicker, setShowPicker] = useState(Platform.OS === 'ios');
   const [submitting, setSubmitting] = useState(false);
 
@@ -70,6 +74,12 @@ export function StartFastScreen({ navigation, route }: Props) {
 
     setSubmitting(true);
     try {
+      if (editMode) {
+        await updateSessionStart(startDate);
+        navigation.goBack();
+        return;
+      }
+
       if (settings.notificationsEnabled) {
         await requestNotificationPermissions();
       }
@@ -79,7 +89,10 @@ export function StartFastScreen({ navigation, route }: Props) {
       });
       navigation.navigate('MainTabs', { screen: 'Home' });
     } catch (error) {
-      Alert.alert('Error', error instanceof Error ? error.message : 'No se pudo iniciar el ayuno.');
+      Alert.alert(
+        'Error',
+        error instanceof Error ? error.message : 'No se pudo guardar el ayuno.'
+      );
     } finally {
       setSubmitting(false);
     }
@@ -87,10 +100,13 @@ export function StartFastScreen({ navigation, route }: Props) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>¿Cuándo empezaste?</Text>
+      <Text style={styles.title}>
+        {editMode ? 'Corregir fecha de inicio' : '¿Cuándo empezaste?'}
+      </Text>
       <Text style={styles.subtitle}>
-        Indica la fecha y hora en que comenzó tu ayuno {protocol.name}. Puedes registrar uno que
-        empezó ayer u otro momento anterior.
+        {editMode
+          ? 'Ajusta cuándo comenzó tu ayuno en curso. Por ejemplo, si empezaste ayer.'
+          : `Indica la fecha y hora en que comenzó tu ayuno ${protocol.name}. Puedes registrar uno que empezó ayer u otro momento anterior.`}
       </Text>
 
       <View style={styles.card}>
@@ -144,7 +160,7 @@ export function StartFastScreen({ navigation, route }: Props) {
       </View>
 
       <Button
-        title="Registrar ayuno"
+        title={editMode ? 'Guardar cambios' : 'Registrar ayuno'}
         onPress={handleConfirm}
         disabled={isFuture || submitting}
         loading={submitting}

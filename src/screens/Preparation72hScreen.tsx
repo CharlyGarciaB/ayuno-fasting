@@ -6,6 +6,7 @@ import { getProtocol } from '../data/protocols';
 import { Button } from '../components/Button';
 import { colors } from '../theme/colors';
 import { RootStackParamList } from '../navigation/types';
+import { navigateToStartFast } from '../navigation/navigate';
 import { requestNotificationPermissions } from '../services/notifications';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Preparation72h'>;
@@ -52,7 +53,7 @@ export function Preparation72hScreen({ navigation, route }: Props) {
       );
     }
 
-    navigation.navigate('StartFast', { protocolId: '72h', preparationAccepted: true });
+    navigateToStartFast(navigation, { protocolId: '72h', preparationAccepted: true });
   };
 
   return (

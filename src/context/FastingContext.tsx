@@ -18,6 +18,7 @@ interface FastingContextValue {
     options?: { preparationAccepted?: boolean; startedAt?: Date | string }
   ) => Promise<void>;
   endFast: (status: 'completed' | 'broken') => Promise<void>;
+  updateSessionStart: (startedAt: Date | string) => Promise<void>;
   setDefaultProtocol: (id: ProtocolId) => Promise<void>;
   setNotificationsEnabled: (enabled: boolean) => Promise<void>;
   refresh: () => Promise<void>;
@@ -116,6 +117,26 @@ export function FastingProvider({ children }: { children: ReactNode }) {
     [activeSession, history]
   );
 
+  const updateSessionStart = useCallback(
+    async (startedAt: Date | string) => {
+      if (!activeSession) return;
+      const startedAtDate = new Date(startedAt);
+      if (startedAtDate.getTime() > Date.now()) {
+        throw new Error('La fecha de inicio no puede ser en el futuro.');
+      }
+      const updated: FastingSession = {
+        ...activeSession,
+        startedAt: startedAtDate.toISOString(),
+      };
+      await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(updated));
+      setActiveSession(updated);
+      if (settings.notificationsEnabled) {
+        await syncNotificationsForSession(updated, true);
+      }
+    },
+    [activeSession, settings.notificationsEnabled]
+  );
+
   const setDefaultProtocol = useCallback(async (id: ProtocolId) => {
     const updated = { ...settings, defaultProtocol: id };
     await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
@@ -141,6 +162,7 @@ export function FastingProvider({ children }: { children: ReactNode }) {
         loading,
         startFast,
         endFast,
+        updateSessionStart,
         setDefaultProtocol,
         setNotificationsEnabled,
         refresh: load,

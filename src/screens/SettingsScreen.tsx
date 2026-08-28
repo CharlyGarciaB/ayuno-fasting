@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Switch, Alert, Platform } from 'react-native';
 import { useFasting } from '../context/FastingContext';
 import { getProtocol } from '../data/protocols';
 import { colors } from '../theme/colors';
+import { APP_VERSION } from '../navigation/types';
 import {
   requestNotificationPermissions,
   getUpcomingNotifications,
@@ -79,7 +80,7 @@ export function SettingsScreen() {
       )}
 
       <Text style={styles.footer}>
-        Las notificaciones requieren Expo Go o una build nativa. No funcionan en el navegador web.
+        Versión {APP_VERSION} · Las notificaciones requieren Expo Go o una build nativa.
       </Text>
     </View>
   );

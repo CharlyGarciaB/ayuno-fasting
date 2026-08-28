@@ -3,7 +3,10 @@ import { ProtocolId } from '../types';
 export interface StartFastParams {
   protocolId: ProtocolId;
   preparationAccepted?: boolean;
+  editMode?: boolean;
 }
+
+export const APP_VERSION = '1.1.0';
 
 export type RootStackParamList = {
   MainTabs: { screen?: 'Home' | 'Protocols' | 'History' } | undefined;

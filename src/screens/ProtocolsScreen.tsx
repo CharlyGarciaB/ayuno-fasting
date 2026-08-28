@@ -14,6 +14,7 @@ import { useFasting } from '../context/FastingContext';
 import { colors } from '../theme/colors';
 import { Protocol } from '../types';
 import { RootStackParamList } from '../navigation/types';
+import { navigateToStartFast } from '../navigation/navigate';
 
 export function ProtocolsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -30,7 +31,7 @@ export function ProtocolsScreen() {
       return;
     }
 
-    navigation.navigate('StartFast', { protocolId: protocol.id });
+    navigateToStartFast(navigation, { protocolId: protocol.id });
   };
 
   const intermittent = PROTOCOLS.filter((p) => !p.isExtended);

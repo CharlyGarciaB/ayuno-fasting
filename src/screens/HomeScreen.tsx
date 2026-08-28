@@ -21,6 +21,7 @@ import { Button } from '../components/Button';
 import { colors } from '../theme/colors';
 import { formatHoursMinutes, formatRelativeStart } from '../utils/time';
 import { RootStackParamList } from '../navigation/types';
+import { navigateToStartFast } from '../navigation/navigate';
 
 export function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -140,6 +141,17 @@ export function HomeScreen() {
       )}
 
       <View style={styles.actions}>
+        <Button
+          title="Corregir fecha de inicio"
+          onPress={() => {
+            if (!activeSession) return;
+            navigateToStartFast(navigation, {
+              protocolId: activeSession.protocolId,
+              editMode: true,
+            });
+          }}
+          variant="secondary"
+        />
         {timer.isComplete ? (
           <Button title="Completar ayuno" onPress={() => handleEnd('completed')} />
         ) : (
